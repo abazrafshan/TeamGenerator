@@ -10,34 +10,148 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
+const team = [];
+
+const employeeq = [
+{
+    type: "list",
+    message: "What type of employee are you adding to your team?",
+    name: "id",
+    choices:[
+        "Engineer",
+        "Intern",
+        "I don't want to add any more team members"]
+}];
+
+const managerq = [
+    {
+        type: "input",
+        message: "What is the name of the manager?",
+        name: "managername"
+    },
+    {
+        type: "input",
+        message: "What is the Manager's email address?",
+        name: "manageremail"
+    },
+    {
+        type: "input",
+        message: "What is the Manager's office number?",
+        name: "officenumber"
+    },
+    {
+        type: "input",
+        message: "What is the Manager's id number?",
+        name: "managerid"
+    }
+];
+
+const internq = [
+    {
+        type: "input",
+        message: "What is the name of the intern?",
+        name: "internname"
+    },
+    {
+        type: "input",
+        message: "What is the intern's email address?",
+        name: "internemail"
+    },
+    {
+        type: "input",
+        message: "Which school did the intern attend?",
+        name: "school"
+    },
+    {
+        type: "input",
+        message: "What is the intern's id number?",
+        name: "internid"
+    }
+];
+
+const engineerq = [
+    {
+        type: "input",
+        message: "What is the name of the engineer?",
+        name: "engineername"
+    },
+    {
+        type: "input",
+        message: "What is the engineer's email address?",
+        name: "engineeremail"
+    },
+    {
+        type: "input",
+        message: "What is the engineer's gitHub username?",
+        name: "github"
+    },
+    {
+        type: "input",
+        message: "What is the engineer's id number?",
+        name: "engineerid"
+    }
+];
+
+
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
-function promptEmployee() {
-    return inquirer.prompt([
-        {
-            type: "input",
-            message: "What is the name of the employee?",
-            name: "name"
-            
-        },
-        {
-            type: "list",
-            message: "What type of employee are you adding to your team?",
-            name: "id",
-            choices:[
-                "Engineer",
-                "Intern",
-                "Manager"
-            ]
-        },
-        {
-            type: "input",
-            message: "What is the employee's email address",
-            name: "email"
-        }
-    ])
+function initiate(){
+    function promptEmployee() {
+        inquirer.prompt(employeeq).then((data)=>{
+            switch(data.id){
+                case "Engineer":
+                    promptEngineer();
+                    break;
+                case "Intern":
+                    promptIntern();
+                    break;
+                default:
+                    createHTML();
+            }
+        })
+    
+    }
+
+
+function promptManager(){
+    inquirer.prompt(managerq).then((data) => {
+        const mgr = new Manager(data.managername, data.managerid, data.manageremail, data.officenumber);
+        team.push(mgr);
+        promptEmployee();
+    });
+    
 }
+
+function promptEngineer(){
+    inquirer.prompt(engineerq).then((data) => {
+        const engr = new Engineer(data.engineername, data.engineerid, data.engineeremail, data.github);
+        team.push(engr);
+        promptEmployee();
+    });
+}
+
+function promptIntern(){
+    inquirer.prompt(internq).then((data) => {
+        const intern = new Intern(data.internname, data.internid, data.internemail, data.school);
+        team.push(intern);
+        promptEmployee();
+    });
+}
+function createHTML(){
+    if(!fs.existsSync(OUTPUT_DIR)){
+        fs.mkdirSync(OUTPUT_DIR);
+    }
+    fs.writeFileSync(outputPath, render(team));
+}
+promptManager();
+}
+
+initiate();
+
+
+    
+
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
